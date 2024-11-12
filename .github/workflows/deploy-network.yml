@@ -1,0 +1,61 @@
+name: Deploy Network Infrastructure
+
+on:
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  TF_CLOUD_API_TOKEN: ${{ secrets.TF_CLOUD_API_TOKEN }}
+  AWS_IAM_ROLE: ${{ secrets.CREATE_NETWORK_ROLE }}
+  TF_HOSTNAME: ${{ secrets.TF_HOSTNAME }}
+  
+
+jobs:
+  infra-deploy:
+    runs-on: ubuntu-latest
+    name: AWS VPC Network
+    defaults:
+      run:
+        working-directory: infra
+    outputs:
+      main_vpc: ${{ steps.tf_out.outputs.vpc }}
+      public_subnets: ${{ steps.tf_out.outputs.public }}
+      private_subnets: ${{ steps.tf_out.outputs.private }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.7"
+          cli_config_credentials_token: ${{ secrets.TF_CLOUD_API_TOKEN }}
+          cli_config_credentials_hostname: ${{ secrets.TF_HOSTNAME }}
+          terraform_wrapper: true
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Format Check
+        run: terraform fmt
+
+      - name: Terraform Validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        run: terraform plan -no-color
+
+      - name: Terraform Apply
+        run: terraform apply --auto-approve
+
+      - name: Terraform Output
+        id: tf_out
+        run: |
+          echo "vpc=$(terraform output main_vpc | tr -d '""')" >> "$GITHUB_OUTPUT"
+          echo "public_subnets=$(terraform output public | tr -d '""')" >> "$GITHUB_OUTPUT"
+          echo "private_subnets=$(terraform output private | tr -d '""')" >> "$GITHUB_OUTPUT"
