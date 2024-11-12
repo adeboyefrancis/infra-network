@@ -1,7 +1,6 @@
 name: Deploy Network Infrastructure
 
 on:
-
   workflow_dispatch:
 
 permissions:
@@ -13,7 +12,6 @@ env:
   TF_CLOUD_API_TOKEN: ${{ secrets.TF_CLOUD_API_TOKEN }}
   AWS_IAM_ROLE: ${{ secrets.CREATE_NETWORK_ROLE }}
   TF_HOSTNAME: ${{ secrets.TF_HOSTNAME }}
-  
 
 jobs:
   infra-deploy:
@@ -23,9 +21,9 @@ jobs:
       run:
         working-directory: infra
     outputs:
-      main_vpc: ${{ steps.tf_out.outputs.vpc }}
-      public_subnets: ${{ steps.tf_out.outputs.public }}
-      private_subnets: ${{ steps.tf_out.outputs.private }}
+      main_vpc: ${{ steps.tf_out.outputs.main_vpc }}
+      public_subnets: ${{ steps.tf_out.outputs.public_subnets }}
+      private_subnets: ${{ steps.tf_out.outputs.private_subnets }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -56,6 +54,6 @@ jobs:
       - name: Terraform Output
         id: tf_out
         run: |
-          echo "vpc=$(terraform output main_vpc | tr -d '""')" >> "$GITHUB_OUTPUT"
-          echo "public_subnets=$(terraform output public | tr -d '""')" >> "$GITHUB_OUTPUT"
-          echo "private_subnets=$(terraform output private | tr -d '""')" >> "$GITHUB_OUTPUT"
+          echo "main_vpc=$(terraform output -json main_vpc | jq -r '.value')" >> "$GITHUB_OUTPUT"
+          echo "public_subnets=$(terraform output -json public_subnets | jq -r '.value[]')" >> "$GITHUB_OUTPUT"
+          echo "private_subnets=$(terraform output -json private_subnets | jq -r '.value[]')" >> "$GITHUB_OUTPUT"
