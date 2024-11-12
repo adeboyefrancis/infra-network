@@ -20,10 +20,7 @@ jobs:
     defaults:
       run:
         working-directory: infra
-    outputs:
-      main_vpc: ${{ steps.tf_out.outputs.main_vpc }}
-      public_subnets: ${{ steps.tf_out.outputs.public_subnets }}
-      private_subnets: ${{ steps.tf_out.outputs.private_subnets }}
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -51,9 +48,3 @@ jobs:
       - name: Terraform Apply
         run: terraform apply --auto-approve
 
-      - name: Terraform Output
-        id: tf_out
-        run: |
-          echo "main_vpc=$(terraform output -json main_vpc | jq -r '.value')" >> "$GITHUB_OUTPUT"
-          echo "public_subnets=$(terraform output -json public_subnets | jq -r '.value[]')" >> "$GITHUB_OUTPUT"
-          echo "private_subnets=$(terraform output -json private_subnets | jq -r '.value[]')" >> "$GITHUB_OUTPUT"
