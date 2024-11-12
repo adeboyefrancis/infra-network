@@ -55,8 +55,9 @@ resource "aws_subnet" "public_subnets" {
 }
 
 # Public Route Table
-resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.main_vpc.id
+resource "aws_route_table" "public_rts" {
+  for_each = aws_subnet.public_subnets
+  vpc_id   = aws_vpc.main_vpc.id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -64,15 +65,15 @@ resource "aws_route_table" "public" {
   }
 
   tags = {
-    Name = "${var.prefix}-public-rt"
+    Name = "${var.prefix}-public-rt-${each.key}"
   }
 }
 
 # Route Table Associations for Public Subnets
-resource "aws_route_table_association" "public" {
+resource "aws_route_table_association" "public_rta" {
   for_each       = aws_subnet.public_subnets
   subnet_id      = each.value.id
-  route_table_id = aws_route_table.public.id
+  route_table_id = aws_route_table.public_rts[each.key].id
 }
 
 
@@ -103,19 +104,20 @@ resource "aws_subnet" "private_subnets" {
 
 
 # Private Route Table
-resource "aws_route_table" "private" {
-  vpc_id = aws_vpc.main_vpc.id
+resource "aws_route_table" "private_rts" {
+  for_each = aws_subnet.private_subnets
+  vpc_id   = aws_vpc.main_vpc.id
 
   tags = {
-    Name = "${var.prefix}-private-rt"
+    Name = "${var.prefix}-private-rt-${each.key}"
   }
 }
 
 
 
 # Route Table Associations for Private Subnets
-resource "aws_route_table_association" "private" {
+resource "aws_route_table_association" "private_rta" {
   for_each       = aws_subnet.private_subnets
   subnet_id      = each.value.id
-  route_table_id = aws_route_table.private.id
+  route_table_id = aws_route_table.private_rts[each.key].id
 }
