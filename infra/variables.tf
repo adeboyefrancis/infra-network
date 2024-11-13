@@ -48,7 +48,7 @@ variable "azs" {
 }
 
 
-variable "sandbox_ou" {
+variable "sandbox_ou_arn" {
   type        = string
-  description = "Sandbox OU Arn"
+  description = "Sandbox OU ARN"
 }

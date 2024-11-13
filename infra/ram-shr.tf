@@ -4,7 +4,6 @@
 ######################################################
 resource "aws_ram_resource_share" "vpc_sharing_subnet" {
   name                      = "Network Infrastructure"
-  allow_external_principals = false
 
   tags = {
     Name = "${var.prefix}-ram-vpc"
@@ -16,7 +15,7 @@ resource "aws_ram_resource_share" "vpc_sharing_subnet" {
 ######################################################
 
 resource "aws_ram_principal_association" "sandbox_ou" {
-  principal          = var.sandbox_ou
+  principal          = var.sandbox_ou_arn
   resource_share_arn = aws_ram_resource_share.vpc_sharing_subnet.arn
 }
 
